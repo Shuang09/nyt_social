@@ -1,0 +1,19 @@
+{%if not replys %}
+    <h4>no reply</h4>
+{% else %}
+    {% for reply in replys%}
+    <div>
+        <div style="margin-top:5px;font-size: 13px;">
+        <div id="replysub{{reply[0]}}">
+            {{reply[7][2:16]}}&nbsp;<a to_uid="{{reply[3]}}" title="{{reply[3]}}" to_uname="{{reply[4]}}" comment_id="{{reply[1]}}" replycount="1" >{{reply[4]}}</a>回复<a to_uid="{{reply[5]}}" title="{{reply[5]}}" to_uname="{{reply[6]}}" comment_id="{{reply[1]}}" replycount="1">{{reply[6]}}</a>:{{reply[2]}}
+            {% if reply[3]==current_user %}
+            <a class="btn btn-danger btn-xs" style="margin-left: 10px;" reply_id="{{reply[0]}}" comment_id="{{reply[1]}}" onclick="delreply(this)">delete</a>
+            {% endif %}
+            {% if not current_user and reply[3]==clientip %}
+            <a class="btn btn-danger btn-xs" style="margin-left: 10px;" reply_id="{{reply[0]}}" comment_id="{{reply[1]}}" onclick="delreply(this)">delete</a>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}

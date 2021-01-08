@@ -1,0 +1,447 @@
+{% extends 'main.html' %}
+{% block body %}
+<script type="text/javascript">
+$(function(){
+var imglist =document.getElementsByTagName("img");
+//安卓4.0+等高版本不支持window.screen.width，安卓2.3.3系统支持
+var _width;
+doDraw();
+
+window.onresize = function(){
+    //捕捉屏幕窗口变化，始终保证图片根据屏幕宽度合理显示
+    doDraw();
+};
+
+function doDraw(){
+    _width = window.innerWidth;
+    for( var i = 0, len = imglist.length; i < len; i++){
+        DrawImage(imglist[i],_width);
+    }
+}
+
+function DrawImage(ImgD,_width){
+    var image=new Image();
+    image.src=ImgD.src;
+    image.onload = function(){
+        //限制，只对宽高都大于30的图片做显示处理
+        if(image.width>30 && image.height>30){
+            if(image.width>_width){
+                ImgD.width=_width;
+                ImgD.height=(image.height*_width)/image.width;
+            }else{
+                ImgD.width=image.width;
+                ImgD.height=image.height;
+            }
+
+        }
+    }
+
+}
+})
+</script>
+
+<head><title>comments</title></head>
+<script type="text/javascript">
+//    var noteheight=0;
+
+    $(document).ready(function(){
+        bootbox.setDefaults("locale","zh_CN");
+        get_comments();
+//        noteheight=$('#readcontent').outerHeight();
+//        $('#readcontent').css("height",'800px');
+    });
+
+    $(function() {
+		$('#comment_sub').click(function () {
+			var is_auth=$('#auth').attr('is_auth');
+            var comment_content=$('#comment_content').val();
+            var note_id=$('#pams').attr('noteid');
+            var anon='0';
+
+            if(window.confirm('Anonymous comments?'))
+            {
+                anon='1';
+            }
+            else if(is_auth=='False'){
+                location.href="/login?next=%2Freadnote/"+note_id;
+                return false;
+            }else
+            {anon='0';}
+
+			if (comment_content== null || $.trim(comment_content)=='' || $.trim(comment_content).length<2){
+                bootbox.alert('Write something here!');
+                return false;
+            }
+			if ($.trim(comment_content).length>600){
+                bootbox.alert('Comment within 600 words!');
+                return false;
+            }
+
+			var data = {
+					"note_id": note_id,
+                    "anon":anon,
+					"s_content": comment_content
+			};
+
+			$.ajax({
+				url: '/addcomment',
+				type:'POST',
+				data: JSON.stringify(data),
+				contentType: 'application/json; charset=UTF-8',
+				dataType: 'json',
+				success: function (data) {
+                    var comcount=$('#comment_area').children(".panel").length;
+                    if(comcount==0){
+                        $('#comment_area').html(data['res']);
+                    }else {
+                    $('#comment_area').append(data['res']);
+                    }
+                    var str=''
+                    $('#comment_content').val(str);
+				},
+				error: function () {
+					bootbox.alert("Alert！");
+				}
+			});
+		});
+
+        $('#more').click(function () {
+        var _height=$('#readcontent').outerHeight();
+        if(_height+600>=noteheight){
+            $('#more').html('No More Content! ');
+            $('#more').addClass('disabled');
+            $('#readcontent').css('height',noteheight+'px');
+            return false;
+        }
+        $('#readcontent').css('height',_height+800+'px');
+        });
+
+        $('#findpage').click(function () {
+        var data = {
+            "note_id": $('#pams').attr('noteid'),
+            "page": $('#page_find').val()
+        };
+        $.ajax({
+            url: '/get_comments',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=UTF-8',
+            dataType: 'json',
+            success: function (data) {
+                $('#comment_area').html(data['res']);
+            },
+            error: function () {
+                bootbox.alert("Loading Exception！");
+            }
+        });
+        });
+	});
+
+    function laud(thisa){
+            var comment_id=$(thisa).attr('comment_id');
+            var is_laud=$('#L'+comment_id).attr("class");
+            if (is_laud=="fa fa-thumbs-o-up"){
+                s_rul="/laud/"+comment_id;
+                $.ajax({
+                 url:s_rul,
+                 dataType:'json',
+                 success:function(data){
+                     ht='('+data['i_laud']+')';
+                     $('#L'+comment_id).html(ht);
+                     $('#L'+comment_id).attr("class","fa fa-thumbs-up");
+                 },
+                 error:function() {
+                     alert("Alert！");
+                 }
+                });
+            }else if(is_laud=="fa fa-thumbs-up"){
+                s_rul = "/cancellaud/" + comment_id;
+                $.ajax({
+                    url: s_rul,
+                    dataType: 'json',
+                    success: function (data) {
+                        ht = '(' + data['i_laud'] + ')';
+                        $('#L' + comment_id).html(ht);
+                        $('#L' + comment_id).attr("class", "fa fa-thumbs-o-up");
+                    },
+                    error: function () {
+                        alert("Alert！");
+                    }
+                });
+            }
+        };
+
+		function down(thisa){
+            var comment_id=$(thisa).attr('comment_id');
+            var is_laud=$('#D'+comment_id).attr("class");
+            if (is_laud=="fa fa-thumbs-o-down"){
+                s_rul="/down/"+comment_id;
+                $.ajax({
+                 url:s_rul,
+                 dataType:'json',
+                 success:function(data){
+                     ht='('+data['i_down']+')';
+                     $('#D'+comment_id).html(ht);
+                     $('#D'+comment_id).attr("class","fa fa-thumbs-down");
+                 },
+                 error:function() {
+                     alert("Alert！");
+                 }
+                });
+            }else if(is_laud=="fa fa-thumbs-down"){
+                s_rul = "/canceldown/" + comment_id;
+                $.ajax({
+                    url: s_rul,
+                    dataType: 'json',
+                    success: function (data) {
+                        ht = '(' + data['i_down'] + ')';
+                        $('#D' + comment_id).html(ht);
+                        $('#D' + comment_id).attr("class", "fa fa-thumbs-o-down");
+                    },
+                    error: function () {
+                        alert("Alert！");
+                    }
+                });
+            }
+
+        };
+
+    function get_comments(){
+        var data = {
+            "note_id": $('#pams').attr('noteid'),
+            "page": 1
+        };
+        $.ajax({
+            url: '/get_comments',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=UTF-8',
+            dataType: 'json',
+            success: function (data) {
+                $('#comment_area').html(data['res']);
+            },
+            error: function () {
+                bootbox.alert("Loading Exception！");
+            }
+        });
+    }
+
+    function get_comments_page(thisa) {
+        var data = {
+            "note_id": $('#pams').attr('noteid'),
+            "page": $(thisa).attr('page')
+        };
+        $.ajax({
+            url: '/get_comments',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=UTF-8',
+            dataType: 'json',
+            success: function (data) {
+                $('#comment_area').html(data['res']);
+            },
+            error: function () {
+                bootbox.alert("Loading Exception！");
+            }
+        });
+    }
+
+    function delcomment(thisa) {
+        var comment_id = $(thisa).attr('comment_id');
+        bootbox.confirm('Delete?',function (result) {
+        if (result) {
+            var s_rul = "/delcomment/" + comment_id;
+			$.ajax({
+				url: s_rul,
+				dataType: 'json',
+				success: function (data) {
+                    $('#comment'+comment_id).css("display","none");
+//					get_comments();
+				},
+				error: function () {
+					alert("Delete Exception！");
+				}
+			});
+        }
+        });
+    }
+
+    function delreply(thisa) {
+        var reply_id = $(thisa).attr('reply_id');
+        var comment_id = $(thisa).attr('comment_id');
+        bootbox.confirm('Delete?',function (result) {
+        if (result) {
+            var data = {
+                "comment_id": comment_id,
+                "reply_id":reply_id
+            };
+            $.ajax({
+                url: '/delreply',
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json; charset=UTF-8',
+                dataType: 'json',
+                success: function (data) {
+                      $('#replysub'+reply_id).css("display","none");
+//                    $('#reply'+comment_id).html(data['res']);
+                },
+                error: function () {
+                    bootbox.alert("Loading Exception！");
+                }
+            });
+        }
+        });
+    }
+
+    function lookreplys(thisa){
+        var comment_id=$(thisa).attr('comment_id');
+        var data = {
+            "comment_id": comment_id
+        };
+        $.ajax({
+            url: '/get_applys',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=UTF-8',
+            dataType: 'json',
+            success: function (data) {
+                $('#reply'+comment_id).html(data['res']);
+                var str="<a comment_id=\""+comment_id+"\" onclick=\"clearreplys(this)\"><font color=\"#FA310F\"  size=\"3px\">收起</font></a>";
+                $('#replytip'+comment_id).html(str);
+            },
+            error: function () {
+                bootbox.alert("Loading Fails！");
+            }
+        });
+    }
+
+    function relookreplys(thisa){
+        var comment_id=$(thisa).attr('comment_id');
+        var str="<a comment_id=\""+comment_id+"\" onclick=\"clearreplys(this)\"><font color=\"#FA310F\"  size=\"3px\">close</font></a>";
+        $('#replytip'+comment_id).html(str);
+        $('#reply'+comment_id).css("display","block");
+    }
+
+    function clearreplys(thisa){
+        var comment_id=$(thisa).attr('comment_id');
+        var replycount=$('#reply'+comment_id).children().length;
+        var str="<a comment_id=\""+comment_id+"\" replycount=\""+replycount+"\" onclick=\"relookreplys(this)\"><font color=\"#FA310F\"  size=\"3px\">there are"+replycount+"comments</font></a>";
+        $('#replytip'+comment_id).html(str);
+        $('#reply'+comment_id).css("display","none");
+    }
+
+
+    function replysub(thisa) {
+        var is_auth = $('#auth').attr('is_auth');
+        var note_id=$('#pams').attr('noteid');
+        var comment_id = $(thisa).attr('comment_id');
+        var to_uids = $(thisa).attr('to_uid');
+        var to_unames = $(thisa).attr('to_uname');
+        var replycount=$(thisa).attr('replycount');
+        var from_uid = $('#pams').attr('from_uid');
+        var articleid=$('#pams').attr('noteid');
+        if (to_uids == from_uid) {
+            bootbox.alert('Are you replying to yourself?');
+            return false;
+        }
+        bootbox.prompt("You are replying" + to_unames, function (result) {
+            if (result) {
+                var data = {
+                    "comment_id": comment_id,
+                    "articleid":articleid,
+                    "to_uids": to_uids,
+                    "to_unames": to_unames,
+                    "s_content": result
+                };
+                $.ajax({
+                    url: '/addreply',
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=UTF-8',
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#reply'+comment_id).append(data['res']);
+                        if(replycount==0){
+                            var str="<a comment_id=\""+comment_id+"\" onclick=\"clearreplys(this)\"><font color=\"#FA310F\"  size=\"3px\">close</font></a>";
+                            $('#replytip'+comment_id).html(str);
+                        }
+                    },
+                    error: function () {
+                        bootbox.alert("Reply Exception！");
+                    }
+                });
+            }
+        });
+    };
+
+    function fllowuser(thisa) {
+         var user_id = $(thisa).attr('user_id');
+         s_rul = "/fllowuser/" + user_id;
+         $.ajax({
+             url: s_rul,
+             dataType: 'json',
+             success: function (data) {
+                if (data['fllow']==2)
+                {
+                    bootbox.alert("You have followed this user!");
+                }else
+                {
+                    bootbox.alert("Follow Sucessfully!");
+                }
+             },
+             error: function () {
+                 alert("Alert！");
+             }
+         });
+     };
+</script>
+
+<div class="readessay">
+	<a id="pams"  noteid="{{articleid}}" from_uid="{{user_id}}" to_uid="{{user_id}}" style="float: left;" href="#" onClick="javascript :history.back(-1);">返回</a>
+	<div id="comment_area"></div>
+    <div class="comment">
+		<span style="float: left;margin-left: 1%;"><font color="#409E00"  size="4px"><i class="fa fa-bullhorn"></i></font>&nbsp;Comment</span><br/>
+		<textarea id="comment_content" style="float: left;width: 98%;margin: 1%;" rows="5" maxlength="600"></textarea>
+		<button id='comment_sub' style="float: right;margin-right: 1%;margin-bottom: 1%;" class="btn btn-warning btn-sm">Publish</button>
+	</div>
+    <nav>
+        <ul class="pager">
+            {% if pages>5 %}
+                {% if page>=3 %}
+                    {% if page==pages %}
+                        <li class="active"><a page="1" onclick="get_comments_page(this)">1</a></li>
+                        <li class="active"><a page="{{pages-2}}" onclick="get_comments_page(this)">{{pages-2}}</a></li>
+                        <li class="active"><a page="{{pages-1}}" onclick="get_comments_page(this)">{{pages-1}}</a></li>
+                    {% else %}
+                        <li class="active"><a page="1" onclick="get_comments_page(this)">1</a></li>
+                        <li class="active"><a page="{{page-1}}" onclick="get_comments_page(this)">{{page-1}}</a></li>
+                        <li class="active"><a page="{{page+1}}" onclick="get_comments_page(this)">{{page+1}}</a></li>
+                    {% endif %}
+                {% else %}
+                    {% for i in range(3)%}
+                        <li class="active"><a page="{{i+1}}" onclick="get_comments_page(this)">{{i+1}}</a></li>
+                    {% endfor %}
+                {% endif %}
+                <li class="active">...</li>
+                <li class="active"><a page="{{pages}}" onclick="get_comments_page(this)">{{pages}}</a></li>
+                <li class="active"><input type="text" name="search" id="page_find" size="1"/></li>
+                <li class="active" id="findpage"><a href="#">&rarr;</a></li>
+            {% else %}
+                {% for i in range(pages)%}
+                    <li class="active" ><a page="{{i+1}}" onclick="get_comments_page(this)">{{i+1}}</a></li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+{% endblock %}
+{% block foot %}
+        <!--<div class="foot">-->
+            <!--<audio controls="controls" autoplay="autoplay" loop="loop">-->
+              <!--<source src="/static/audio/Caribbean3.mp3" type="audio/mpeg">-->
+              <!--<source src="/static/audio/Caribbean.wav" type="audio/wav">-->
+              <!--Your browser does not support the audio tag.-->
+            <!--</audio>-->
+        <!--</div>-->
+{% endblock %}

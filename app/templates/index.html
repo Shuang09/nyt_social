@@ -1,0 +1,233 @@
+{% extends "main.html" %}
+{% block body %}
+<head><title>nyt_social</title></head>
+<script type="text/javascript">
+$(function(){
+var imglist =document.getElementsByTagName("img");
+//安卓4.0+等高版本不支持window.screen.width，安卓2.3.3系统支持
+var _width;
+doDraw();
+window.onresize = function(){
+    //捕捉屏幕窗口变化，始终保证图片根据屏幕宽度合理显示
+    doDraw();
+};
+
+function doDraw(){
+    _width = window.innerWidth;
+    for( var i = 0, len = imglist.length; i < len; i++){
+        DrawImage(imglist[i],_width);
+    }
+}
+
+function DrawImage(ImgD,_width){
+    var image=new Image();
+    image.src=ImgD.src;
+    image.onload = function(){
+        //限制，只对宽高都大于30的图片做显示处理
+        if(image.width>30 && image.height>30){
+            if(image.width>_width){
+                ImgD.width=(_width-5);
+                ImgD.height=(image.height*_width)/image.width;
+            }else{
+                ImgD.width=image.width;
+                ImgD.height=image.height;
+            }
+
+        }
+    }
+}
+})
+</script>
+<script type="text/javascript">
+     $(document).ready(function(){
+         $('#page_find').val({{page}});
+         var _width = window.innerWidth;
+         var w=String(_width-1190)+'px';
+		 $('.right_col').css('width',w);
+	});
+    $(function()
+    {
+
+		$('.laud').click(function(){
+            var noteid=$(this).attr('noteid');
+            var is_laud=$('#L'+noteid).attr("class");
+            if (is_laud=="fa fa-thumbs-o-up"){
+                s_rul="/laud/"+noteid;
+                $.ajax({
+                 url:s_rul,
+                 dataType:'json',
+                 success:function(data){
+                     ht='('+data['i_laud']+')';
+                     $('#L'+noteid).html(ht);
+                     $('#L'+noteid).attr("class","fa fa-thumbs-up");
+    //                 $('#L'+noteid).removeClass().addClass("fa fa-thumbs-up");
+                 },
+                 error:function() {
+                     alert("Alert！");
+                 }
+                });
+            }else if(is_laud=="fa fa-thumbs-up"){
+                s_rul = "/cancellaud/" + noteid;
+                $.ajax({
+                    url: s_rul,
+                    dataType: 'json',
+                    success: function (data) {
+                        ht = '(' + data['i_laud'] + ')';
+                        $('#L' + noteid).html(ht);
+                        $('#L' + noteid).attr("class", "fa fa-thumbs-o-up");
+                    },
+                    error: function () {
+                        alert("Alert！");
+                    }
+                });
+            }
+
+        });
+
+		$('#findpage').click(function(){
+				pageno=$('#page_find').val();
+                if(pageno<1)
+                {
+                    pageno=1;
+                }
+                if(pageno>{{pages}})
+                {
+                    pageno={{pages}};
+                }
+				location.href="/?page="+pageno;
+		});
+
+        $('#page_find').bind('keypress',function(event){
+            if(event.keyCode == "13")
+            {
+				pageno=$(this).val();
+                if(pageno<1)
+                {
+                    pageno=1;
+                }
+                if(pageno>{{pages}})
+                {
+                    pageno={{pages}};
+                }
+				location.href="/?page="+pageno;
+            }
+        });
+	})
+
+     function fllow(thisa) {
+         var articleid = $(thisa).attr('articleid');
+         var is_fllow = $(thisa).attr("class");
+         if (is_fllow == "fa fa-bookmark-o") {
+             s_rul = "/fllowarticle/" + articleid;
+             $.ajax({
+                 url: s_rul,
+                 dataType: 'json',
+                 success: function (data) {
+                     $(thisa).attr("class", "fa fa-bookmark");
+                 },
+                 error: function () {
+                     alert("Alert！");
+                 }
+             });
+         } else if (is_fllow == "fa fa-bookmark") {
+             s_rul = "/delfllowarticle/" + articleid;
+             $.ajax({
+                 url: s_rul,
+                 dataType: 'json',
+                 success: function (data) {
+                     $(thisa).attr("class", "fa fa-bookmark-o");
+                 },
+                 error: function () {
+                     alert("Alert！");
+                 }
+             });
+         }
+
+     };
+</script>
+
+<div class="main_container">
+	<div style="text-align: center;width: 100%;margin: 10px 0px 8px 0px;">
+		<font face="微软雅黑" size="4px">New Article</font>
+    </div>
+
+    {% macro rend_notes(note) %}
+        <div class="noteitem">
+            <div class="theme_img">
+                {{note[2]}}
+                <div style="text-align: left;"><a href="{{note[6]}}">{{note[5]}}</a></div>
+            </div>
+            <div class="note_title">{{note[7]}}</div>
+            <div class="essaydel">
+{#                <div style="width:auto;margin-right:4px;float: left;"><font color="#409E00"  size="3px"><i class="fa fa-tree"></i></font>&nbsp;<a style="margin-left: 1px;font-family: 微软雅黑;" href="/classify/{{note[2]}}/">{{note[2]}}</a><span style="margin-left: 10px;font-size: 13px;">{{note[4]}}</span></div>#}
+{#                <div style="width:auto;margin-right:4px;float: right;"><a title="点赞" class="laud" noteid="{{note[0]}}" href="javascript:;" style="margin-left: 8px;font-family: 微软雅黑;"><i id="L{{note[0]}}" class="fa fa-commenting">({{note[10]}})</i></a></div>#}
+                <div style="width:auto;margin-right:4px;float: right;color: #01AAED;">&nbsp;&nbsp;<a href="/read_comments/{{note[0]}}"><i  class="fa fa-commenting">({{note[10]}})</i></a></div>
+{#                <div style="width:auto;margin-right:4px;float: right;"><a title="打开阅读" style="margin-left: 8px;font-family: 微软雅黑;" href="/readnote/{{note[0]}}"><span id="R{{note[0]}}" class="fa fa-eye">({{note[4]}})</span></a></div>#}
+                <div style="width:auto;margin-right:4px;float: right;color: #3d3d3d;"><i class="fa fa-user"></i>{{note[1]}}</div>
+                <div onclick="" style="width:auto;margin-left:4px;float: left;color: #f0ad4e;"><i articleid="{{note[0]}}" onclick="fllow(this)" class="fa fa-bookmark-o">{{note[8]}}</i></div>
+            </div>
+        </div>
+    {% endmacro %}
+
+    {% for note in notes%}
+        {{ rend_notes(note) }}
+    {% endfor %}
+
+
+<div style="width: 100%;float: left;">
+    <nav>
+        <ul class="pager">
+        {% if pages>5 %}
+            {% if page>=3 %}
+                {% if page==pages %}
+                    <li class="active" id="1"><a href="/?page=1">1</a></li>
+                    <li class="active" id="{{pages-2}}"><a href="/?page={{pages-2}}">{{pages-2}}</a></li>
+                    <li class="active" id="{{pages-1}}"><a href="/?page={{pages-1}}">{{pages-1}}</a></li>
+                {% else %}
+                    <li class="active" id="1"><a href="/?page=1">1</a></li>
+                    <li class="active" id="{{page-1}}"><a href="/?page={{page-1}}">{{page-1}}</a></li>
+                    <li class="active" id="{{page+1}}"><a href="/?page={{page+1}}">{{page+1}}</a></li>
+                {% endif %}
+            {% else %}
+                {% for i in range(3)%}
+                    <li class="active" id="{{i+1}}"><a href="/?page={{i+1}}">{{i+1}}</a></li>
+                {% endfor %}
+            {% endif %}
+            <li class="active">...</li>
+            <li class="active" id="{{pages}}"><a href="/?page={{pages}}">{{pages}}</a></li>
+            <li class="active"><input type="text" name="search" id="page_find" size="1"/></li>
+            <li class="active" id="findpage"><a href="#">&rarr;</a></li>
+        {% else %}
+            {% for i in range(pages)%}
+                <li class="active" id="{{i+1}}"><a href="/?page={{i+1}}">{{i+1}}</a></li>
+            {% endfor %}
+        {% endif %}
+        </ul>
+    </nav>
+</div>
+</div>
+{% endblock %}
+
+{% block right_col %}
+<div class="right_col">
+    <div style="float: left;text-align: center;width: 100%;">
+		<h3><font face="微软雅黑" color="#FA4039"  size="3px"><span class="fa fa-heart-o"></span>&nbsp;Topic I Followed</font></h3>
+        {% for s in mytopic%}
+        <div class="ulli"><a href="/TopicArticle/{{s[0]}}">{{s[0]}}</a></div>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 15px;float: left;text-align: center;width: 100%;border-top:1px dotted #185598; ">
+		<h3><font face="微软雅黑" color="#FA4039"  size="3px"><span class="fa fa-heart-o"></span>&nbsp;User I Followed</font></h3>
+        {% for s in myusers%}
+        <div class="ulli"><a href="/UserCommnets/{{s[0]}}">{{s[1]}}</a></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block foot %}
+        <div class="foot">
+            <font face="微软雅黑" size="4px">Bottom Line</font>
+        </div>
+{% endblock %}

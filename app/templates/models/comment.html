@@ -1,0 +1,53 @@
+{% macro rend_comments(comment) %}
+<div id="comment{{comment[0]}}"  class="panel panel-warning">
+    <div class="panel-heading" style="background-color: #FCF7F7;">
+        <div style="overflow: hidden;text-align: left;">
+            <font color="#E83112" size="3px"><i class="fa fa-paper-plane-o"></i>&nbsp;<a user_id="{{comment[3]}}" disabled="true" onclick="fllowuser(this)">{{comment[4]}}</a></font>&nbsp&nbsp
+            <span style="font-size: 13px;">{{comment[5][:16]}}</span>&nbsp&nbsp
+            {% if not current_user and comment[3]!=clientip %}
+                <a to_uid="{{comment[3]}}"  to_uname="{{comment[4]}}" comment_id="{{comment[0]}}" replycount="{{comment[8]}}" onclick="replysub(this)">
+                    <button type="button" class="btn btn-success btn-xs">reply</button>
+                </a>
+            {% endif %}
+            {% if current_user %}
+                {% if (comment[3]!=user_id) or (comment[3]!=clientip) %}
+                <a to_uid="{{comment[3]}}"  to_uname="{{comment[4]}}" comment_id="{{comment[0]}}" replycount="{{comment[8]}}" onclick="replysub(this)">
+                    <button type="button" class="btn btn-success btn-xs">reply</button>
+                </a>
+                {% endif %}
+            {% endif %}
+            &nbsp;&nbsp;
+            <a  comment_id="{{comment[0]}}" class="laud" onclick="laud(this)">
+                <i id="L{{comment[0]}}" class="fa fa-thumbs-o-up">({{comment[6]}})</i>
+            </a>
+            &nbsp;&nbsp;
+            <a  comment_id="{{comment[0]}}"  class="down" onclick="down(this)">
+                <i id="D{{comment[0]}}" class="fa fa-thumbs-o-down">({{comment[7]}})</i>
+            </a>
+            {% if comment[3]==user_id or comment[3]==clientip %}
+            <a class="btn btn-danger btn-xs" comment_id="{{comment[0]}}" onclick="delcomment(this)">delete</a>
+            {% endif %}
+        <div style="margin-top: 5px;margin-left: 3px;font-size: 13px;">{{comment[2]}}</div>
+    </div></div>
+    <div class="panel-body">
+        <div id="reply{{comment[0]}}" class="replys">
+
+        </div>
+        <div id="replytip{{comment[0]}}" class="replys" comment_id="{{comment[0]}}" replycount="{{comment[8]}}">
+            {% if comment[8] %}
+            <a comment_id="{{comment[0]}}" replycount="{{comment[8]}}" onclick="lookreplys(this)"><font color="#FA310F"  size="3px">There are{{ comment[8] }}comments</font></a>
+            {% else %}
+            <h4>no reply</h4>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{%if not comments %}
+    <h4>no reply</h4>
+{% else %}
+    {% for comment in comments%}
+    {{ rend_comments(comment) }}
+    {% endfor %}
+{% endif %}

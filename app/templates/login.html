@@ -1,0 +1,47 @@
+<head><title>Log in</title></head>
+{% extends "main.html" %}
+{% block body %}
+<script type="text/javascript">
+function CheckMail(mail) {
+ var filter  = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+ if (filter.test(mail)) return true;
+ else {return false;}
+}
+
+$(function()
+{
+	$('#sub').click(function(){
+		var s_email=$('#s_email').val();
+		var s_pwd=$('#s_pwd').val();
+		if(s_pwd==''||s_email=='')
+		{
+			alert('Please input Userid and Password!');
+			return false;
+		}
+		$('#loginf').submit();
+	})
+})
+</script>
+		<title>Login</title>
+		<div class="login">
+			<form method="POST">
+			<div class="loginput">
+				<font color="#FA3112">{{msg}}</font>
+                <form id="loginf" method="post">
+				<div class="input-group input-group-sm">
+					<span class="input-group-addon">Userid:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <input class="form-control" size="14" id="s_uid" name="u_uid">
+				</div><br/>
+				<div class="input-group input-group-sm">
+					<span class="input-group-addon">Password:</span>
+					<input class="form-control" size="14" type="password" id="s_pwd" name="u_pwd">
+				</div><br/>
+                </form>
+				<div style="width: auto;height: auto;">
+				<button type="submit" id='sub' class="btn btn-primary btn-sm"><i class="fa fa-check"></i>Longin</button>&nbsp&nbsp
+				<button type="reset" class="btn btn-primary btn-sm"><i class="fa fa-close"></i>Reset</button>
+				</div>
+			</div>
+			</form>
+		</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+<div id="comment{{comment.id}}"  class="panel panel-warning">
+    <div class="panel-heading" style="background-color: #FCF7F7;">
+        <div style="overflow: hidden;text-align: left;">
+            <font color="#E83112" size="3px"><i class="fa fa-paper-plane-o"></i>&nbsp;<a title="{{comment.from_uid}}" disabled="true">{{comment.from_uname}}</a></font>&nbsp&nbsp
+            <span style="font-size: 13px;">{{comment.dt_record[:16]}}</span>&nbsp&nbsp
+            {% if not current_user and comment.from_uid!=clientip %}
+                <a to_uid="{{comment.from_uid}}" to_uname="{{comment.from_uname}}" comment_id="{{comment.id}}" replycount="0" onclick="replysub(this)">
+                <button type="button" class="btn btn-success btn-xs">reply</button>
+                </a>
+            {% endif %}
+            {% if current_user%}
+                {% if (comment.from_uid!=current_user.user_id) or (comment.from_uid!=clientip) %}
+                <a to_uid="{{comment.from_uid}}" to_uname="{{comment.from_uname}}" comment_id="{{comment.id}}" replycount="0" onclick="replysub(this)">
+                <button type="button" class="btn btn-success btn-xs">reply</button>
+                </a>
+                {% endif %}
+            {% endif %}
+             &nbsp;&nbsp;
+             <a  comment_id="{{comment.id}}" class="laud" onclick="laud(this)">
+                <i id="L{{comment.id}}" class="fa fa-thumbs-up">(0)</i></a>
+             </a>
+             &nbsp;&nbsp;
+             <a  comment_id="{{comment[0]}}"  class="down" onclick="down(this)">
+                <i id="D{{comment.id}}" class="fa fa-thumbs-down">(0)</i></a>
+             </a>
+            {% if comment.from_uid==current_user or comment.from_uid==clientip %}
+                <a class="btn btn-danger btn-xs" comment_id="{{comment.id}}" onclick="delcomment(this)">delete reply</a>
+            {% endif %}
+
+        </div>
+        <div style="margin-top: 5px;margin-left: 3px;font-size: 13px;">{{comment.s_content}}</div>
+    </div>
+    <div class="panel-body">
+        <div id="reply{{comment.id}}" class="replys">
+
+        </div>
+        <div id="replytip{{comment.id}}" class="replys" comment_id="{{comment.id}}" replycount="0">
+            <h4>no reply</h4>
+        </div>
+    </div>
+</div>

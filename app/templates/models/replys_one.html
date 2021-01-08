@@ -1,0 +1,13 @@
+<div id="replysub{{reply.id}}">
+<div style="background-color: #E8FADB;margin-top:5px;font-size: 13px;">
+    <div>
+        {{reply.dt_record[2:16]}}&nbsp;<a to_uid="{{reply.from_uid}}" title="{{reply.from_uid}}" to_uname="{{reply.from_uname}}" comment_id="{{reply.comment_id}}" replycount="1" onclick="replysub(this)">{{reply.from_uname}}</a>回复<a to_uid="{{reply.to_uids}}" title="{{reply.to_uids}}" to_uname="{{reply.to_unames}}" comment_id="{{reply.comment_id}}" replycount="1" onclick="replysub(this)">{{reply.to_unames}}</a>:{{reply.s_content}}
+        {% if reply.from_uid==current_user %}
+            <a class="btn btn-danger btn-xs" style="margin-left: 10px;" reply_id="{{reply.id}}" comment_id="{{reply.comment_id}}" onclick="delreply(this)">delete</a>
+        {% endif %}
+        {% if not current_user and reply.from_uid==clientip %}
+            <a class="btn btn-danger btn-xs" style="margin-left: 10px;" reply_id="{{reply.id}}" comment_id="{{reply.comment_id}}" onclick="delreply(this)">delete</a>
+        {% endif %}
+    </div>
+</div>
+</div>
